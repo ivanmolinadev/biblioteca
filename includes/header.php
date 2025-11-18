@@ -27,10 +27,10 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
 </head>
 <body>
     <!-- Navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">
-                <i class="bi bi-book"></i> <?= APP_NAME ?>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-1">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand me-auto" href="dashboard.php">
+                <i class="bi bi-book"></i> Biblioteca
             </a>
             
             <?php if (isAuthenticated()): ?>
@@ -39,7 +39,7 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="dashboard.php">
                             <i class="bi bi-house"></i> Inicio
@@ -47,53 +47,42 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                     </li>
                     
                     <?php if (isAdmin()): ?>
-                    <!-- Menú Catálogo -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="catalogoDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-collection"></i> Catálogo
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="libros.php"><i class="bi bi-book"></i> Libros</a></li>
-                            <li><a class="dropdown-item" href="autores.php"><i class="bi bi-person-circle"></i> Autores</a></li>
-                            <li><a class="dropdown-item" href="categorias.php"><i class="bi bi-tags"></i> Categorías</a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Menú Gestión -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="gestionDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-people"></i> Gestión
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="lectores.php"><i class="bi bi-person-badge"></i> Lectores</a></li>
-                            <li><a class="dropdown-item" href="usuarios.php"><i class="bi bi-person-gear"></i> Usuarios del Sistema</a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Menú Préstamos -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="prestamosDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-arrow-left-right"></i> Préstamos
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="prestamos.php"><i class="bi bi-journal-arrow-up"></i> Nuevo Préstamo</a></li>
-                            <li><a class="dropdown-item" href="prestamos_activos.php"><i class="bi bi-journal-check"></i> Activos</a></li>
-                            <li><a class="dropdown-item" href="devoluciones.php"><i class="bi bi-journal-arrow-down"></i> Devoluciones</a></li>
-                            <li><a class="dropdown-item" href="prestamos_atrasados.php"><i class="bi bi-exclamation-triangle"></i> Atrasados</a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Reportes -->
+                    <!-- Navegación simplificada para Admin - Módulos principales -->
                     <li class="nav-item">
-                        <a class="nav-link" href="reportes.php">
-                            <i class="bi bi-graph-up"></i> Reportes
+                        <a class="nav-link" href="libros.php">
+                            <i class="bi bi-book"></i> Libros
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="autores.php">
+                            <i class="bi bi-person-lines-fill"></i> Autores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="categorias.php">
+                            <i class="bi bi-tags"></i> Categorías
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lectores.php">
+                            <i class="bi bi-people"></i> Lectores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="prestamos.php">
+                            <i class="bi bi-journal-arrow-up"></i> Préstamos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="devoluciones.php">
+                            <i class="bi bi-journal-arrow-down"></i> Devoluciones
                         </a>
                     </li>
                     
                     <?php else: ?>
-                    <!-- Menú para usuarios regulares -->
+                    <!-- Menú para usuarios regulares (lectores) -->
                     <li class="nav-item">
-                        <a class="nav-link" href="catalogo.php">
+                        <a class="nav-link" href="libros.php">
                             <i class="bi bi-search"></i> Catálogo de Libros
                         </a>
                     </li>
