@@ -274,10 +274,9 @@ include '../includes/header.php';
                                         
                                         <?php if ($libro['prestamos_activos'] == 0): ?>
                                             <a href="libro_delete.php?id=<?= $libro['id'] ?>" 
-                                               class="btn btn-outline-danger btn-delete"
+                                               class="btn btn-outline-danger"
                                                data-bs-toggle="tooltip" 
-                                               title="Eliminar"
-                                               data-confirm="¿Está seguro de que desea eliminar este libro?">
+                                               title="Eliminar">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>
@@ -351,5 +350,7 @@ include '../includes/header.php';
         <?php endif; ?>
     </div>
 </div>
+
+
 
 <?php include '../includes/footer.php'; ?>
