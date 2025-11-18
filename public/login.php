@@ -45,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updateSql = "UPDATE usuarios SET ultima_sesion = NOW() WHERE id = ?";
                 executeQuery($updateSql, [$user['id']]);
                 
+
+                
                 logActivity('login', 'Inicio de sesión exitoso');
                 
                 // Redirigir según el rol
@@ -70,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['timeout'])) {
     $error_message = 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
 }
+
 
 $page_title = 'Iniciar Sesión';
 ?>
@@ -174,7 +177,9 @@ $page_title = 'Iniciar Sesión';
                                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                                        placeholder="Ingrese su usuario o email"
                                        required>
-
+                                <div class="invalid-feedback">
+                                    Por favor, ingrese su usuario o email.
+                                </div>
                             </div>
                             
                             <div class="mb-3">
@@ -196,8 +201,12 @@ $page_title = 'Iniciar Sesión';
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
-
+                                <div class="invalid-feedback">
+                                    Por favor, ingrese su contraseña.
+                                </div>
                             </div>
+                            
+
                             
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary btn-login">
