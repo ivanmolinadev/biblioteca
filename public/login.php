@@ -177,9 +177,6 @@ $page_title = 'Iniciar Sesión';
                                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                                        placeholder="Ingrese su usuario o email"
                                        required>
-                                <div class="invalid-feedback">
-                                    Por favor, ingrese su usuario o email.
-                                </div>
                             </div>
                             
                             <div class="mb-3">
@@ -200,9 +197,6 @@ $page_title = 'Iniciar Sesión';
                                             title="Mostrar/Ocultar contraseña">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                </div>
-                                <div class="invalid-feedback">
-                                    Por favor, ingrese su contraseña.
                                 </div>
                             </div>
                             
