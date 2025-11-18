@@ -140,9 +140,6 @@ include '../includes/header.php';
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><?= htmlspecialchars($pageTitle) ?></h1>
-                <a href="autores.php" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Volver a Autores
-                </a>
             </div>
 
             <?php if ($success): ?>

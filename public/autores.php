@@ -98,52 +98,37 @@ include '../includes/header.php';
     </div>
 </div>
 
-<!-- Filtros de búsqueda -->
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-8">
-                <label for="search" class="form-label">Búsqueda</label>
-                <input type="text" 
-                       class="form-control live-search" 
-                       id="search" 
-                       name="search"
-                       value="<?= htmlspecialchars($search) ?>"
-                       placeholder="Nombre, apellidos o nacionalidad..."
-                       data-target="#autoresTable">
-            </div>
-            
-            <div class="col-md-4 d-flex align-items-end">
-                <div class="me-2">
-                    <button type="submit" class="btn btn-outline-primary" style="position: relative; z-index: 1000;">
-                        <i class="bi bi-search"></i> Filtrar
-                    </button>
-                </div>
-                <div class="me-2">
-                    <a href="autores.php" class="btn btn-outline-secondary" style="position: relative; z-index: 1000;">
-                        <i class="bi bi-arrow-clockwise"></i> Limpiar
-                    </a>
-                </div>
-                
-                <div class="ms-auto">
-                    <select name="per_page" class="form-select" onchange="this.form.submit()">
-                        <option value="10" <?= $per_page == 10 ? 'selected' : '' ?>>10 por página</option>
-                        <option value="25" <?= $per_page == 25 ? 'selected' : '' ?>>25 por página</option>
-                        <option value="50" <?= $per_page == 50 ? 'selected' : '' ?>>50 por página</option>
-                    </select>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Tabla de autores -->
+<!-- Autores -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">
-            Autores Registrados
-            <span class="badge bg-primary ms-2"><?= number_format($total_records) ?></span>
-        </h5>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0">
+                    Autores Registrados
+                    <span class="badge bg-primary ms-2"><?= number_format($total_records) ?></span>
+                </h5>
+            </div>
+            <div class="col-md-6">
+                <form method="GET" class="row g-2 align-items-end">
+                    <div class="col-8">
+                        <input type="text" 
+                               class="form-control form-control-sm live-search" 
+                               id="search" 
+                               name="search"
+                               value="<?= htmlspecialchars($search) ?>"
+                               placeholder="Buscar autores..."
+                               data-target="#autoresTable">
+                    </div>
+                    <div class="col-4">
+                        <select name="per_page" id="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="10" <?= $per_page == 10 ? 'selected' : '' ?>>10</option>
+                            <option value="25" <?= $per_page == 25 ? 'selected' : '' ?>>25</option>
+                            <option value="50" <?= $per_page == 50 ? 'selected' : '' ?>>50</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <?php if (empty($autores)): ?>
@@ -227,11 +212,10 @@ include '../includes/header.php';
                                         
                                         <?php if ($autor['total_libros'] == 0): ?>
                                             <a href="autor_delete.php?id=<?= $autor['id'] ?>" 
-                                               class="btn btn-outline-danger btn-delete"
+                                               class="btn btn-outline-danger"
                                                style="position: relative; z-index: 1000;"
                                                data-bs-toggle="tooltip" 
-                                               title="Eliminar autor"
-                                               data-confirm="¿Está seguro de que desea eliminar este autor?">
+                                               title="Eliminar autor">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>
