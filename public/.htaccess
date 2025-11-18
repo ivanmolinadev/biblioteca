@@ -1,0 +1,112 @@
+# Configuración Apache para Sistema de Biblioteca y Préstamos
+
+# Configurar página de error personalizada
+ErrorDocument 404 /biblioteca/public/404.php
+ErrorDocument 403 /biblioteca/public/403.php
+ErrorDocument 500 /biblioteca/public/500.php
+
+# Configuración de seguridad
+<IfModule mod_headers.c>
+    # Prevenir clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevenir MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy (ajustar según necesidades)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net; img-src 'self' data: https:; frame-ancestors 'none';"
+</IfModule>
+
+# Ocultar archivos sensibles
+<FilesMatch "\.(ini|log|conf)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Ocultar archivos de configuración
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "db.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "init.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "csrf.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Ocultar directorios sensibles
+Options -Indexes
+
+# Configuración de caché para assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # CSS y JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    
+    # Imágenes
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    
+    # Fuentes
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# Comprimir archivos
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE text/xml
+</IfModule>
+
+# Configuración PHP (si está permitido)
+<IfModule mod_php8.c>
+    # Ocultar información de PHP
+    php_flag expose_php off
+    
+    # Configuración de sesiones
+    php_value session.cookie_httponly 1
+    php_value session.use_only_cookies 1
+    php_value session.cookie_secure 0
+    php_value session.cookie_samesite "Lax"
+    
+    # Configuración de uploads
+    php_value upload_max_filesize "10M"
+    php_value post_max_size "10M"
+    php_value max_execution_time 300
+    
+    # Configuración de errores (para producción)
+    php_flag display_errors off
+    php_flag log_errors on
+</IfModule>
+
+# Redirección amigable (opcional)
+# RewriteEngine On
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
