@@ -1,3 +1,8 @@
+/* Forzar z-index alto para el formulario de devolución */
+.z-top-form {
+    position: relative;
+    z-index: 9999 !important;
+}
 /* Estilos personalizados para Sistema de Biblioteca y Préstamos */
 
 :root {
