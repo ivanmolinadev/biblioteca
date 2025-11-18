@@ -101,7 +101,7 @@ include '../includes/header.php';
         <div class="col-md-3 mb-3">
             <div class="stats-card danger">
                 <h3><?= number_format($prestamos_vencidos) ?></h3>
-                <p><i class="bi bi-exclamation-triangle"></i> Vencidos</p>
+                <p><i class="bi bi-exclamation-triangle"></i> Préstamos de libros vencidos (No devueltos)</p>
             </div>
         </div>
     </div>
