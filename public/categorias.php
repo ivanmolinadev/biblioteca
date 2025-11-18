@@ -67,7 +67,7 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona las categorías para clasificar los libros</p>
     </div>
     <div>
-        <a href="categoria_form.php" class="btn btn-primary">
+        <a href="categoria_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
             <i class="bi bi-plus-circle"></i> Agregar Categoría
         </a>
     </div>
@@ -76,8 +76,8 @@ include '../includes/header.php';
 <!-- Filtros de búsqueda -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-8">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-9">
                 <label for="search" class="form-label">Búsqueda</label>
                 <input type="text" 
                        class="form-control live-search" 
@@ -87,26 +87,14 @@ include '../includes/header.php';
                        placeholder="Nombre o descripción de la categoría..."
                        data-target="#categoriasTable">
             </div>
-            
-            <div class="col-md-4 d-flex align-items-end">
-                <div class="me-2">
-                    <button type="submit" class="btn btn-outline-primary">
-                        <i class="bi bi-search"></i> Filtrar
-                    </button>
-                </div>
-                <div class="me-2">
-                    <a href="categorias.php" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-clockwise"></i> Limpiar
-                    </a>
-                </div>
-                
-                <div class="ms-auto">
-                    <select name="per_page" class="form-select" onchange="this.form.submit()">
-                        <option value="10" <?= $per_page == 10 ? 'selected' : '' ?>>10 por página</option>
-                        <option value="25" <?= $per_page == 25 ? 'selected' : '' ?>>25 por página</option>
-                        <option value="50" <?= $per_page == 50 ? 'selected' : '' ?>>50 por página</option>
-                    </select>
-                </div>
+            <div class="col-md-3">
+                <label for="per_page" class="form-label">Registros</label>
+                <select name="per_page" class="form-select" onchange="this.form.submit()">
+                    <option value="10" <?= $per_page == 10 ? 'selected' : '' ?>>10 por página</option>
+                    <option value="25" <?= $per_page == 25 ? 'selected' : '' ?>>25 por página</option>
+                    <option value="50" <?= $per_page == 50 ? 'selected' : '' ?>>50 por página</option>
+                    <option value="100" <?= $per_page == 100 ? 'selected' : '' ?>>100 por página</option>
+                </select>
             </div>
         </form>
     </div>
@@ -183,10 +171,9 @@ include '../includes/header.php';
                                         
                                         <?php if ($categoria['total_libros'] == 0): ?>
                                             <a href="categoria_delete.php?id=<?= $categoria['id'] ?>" 
-                                               class="btn btn-outline-danger btn-delete"
+                                               class="btn btn-outline-danger"
                                                data-bs-toggle="tooltip" 
-                                               title="Eliminar"
-                                               data-confirm="¿Está seguro de que desea eliminar esta categoría?">
+                                               title="Eliminar">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>
