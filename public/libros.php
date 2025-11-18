@@ -205,7 +205,6 @@ include '../includes/header.php';
                             <th>Año</th>
                             <th>Copias</th>
                             <th>Disponibles</th>
-                            <th>Estado</th>
                             <th width="150">Acciones</th>
                         </tr>
                     </thead>
@@ -243,17 +242,6 @@ include '../includes/header.php';
                                         <span class="badge bg-success"><?= $libro['copias_disponibles'] ?></span>
                                     <?php else: ?>
                                         <span class="badge bg-danger">0</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($libro['prestamos_activos'] > 0): ?>
-                                        <span class="status-activo">
-                                            <i class="bi bi-circle-fill"></i> En préstamo (<?= $libro['prestamos_activos'] ?>)
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="status-devuelto">
-                                            <i class="bi bi-circle-fill"></i> Disponible
-                                        </span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
