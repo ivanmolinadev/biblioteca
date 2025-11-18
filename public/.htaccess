@@ -20,7 +20,7 @@ ErrorDocument 500 /biblioteca/public/500.php
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     
     # Content Security Policy (ajustar según necesidades)
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net; img-src 'self' data: https:; frame-ancestors 'none';"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' cdn.jsdelivr.net; frame-ancestors 'none';"
 </IfModule>
 
 # Ocultar archivos sensibles
