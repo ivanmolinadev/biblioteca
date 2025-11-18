@@ -106,9 +106,6 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                                 <small class="text-muted"><?= ucfirst($current_user['role']) ?></small>
                             </h6></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="perfil.php"><i class="bi bi-person"></i> Mi Perfil</a></li>
-                            <li><a class="dropdown-item" href="cambiar_password.php"><i class="bi bi-shield-lock"></i> Cambiar Contraseña</a></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a></li>
                         </ul>
                     </li>
