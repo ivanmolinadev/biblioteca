@@ -12,9 +12,6 @@
                     <p class="mb-0">
                         Versión <?= APP_VERSION ?> &copy; <?= date('Y') ?>
                     </p>
-                    <small class="text-muted">
-                        Desarrollado con <i class="bi bi-heart-fill text-danger"></i>
-                    </small>
                 </div>
             </div>
         </div>
