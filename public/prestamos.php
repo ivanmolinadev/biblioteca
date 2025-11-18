@@ -186,9 +186,9 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona los préstamos activos y el historial</p>
     </div>
     <div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoPrestamoModal">
+        <a href="prestamo_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
             <i class="bi bi-plus-circle"></i> Nuevo Préstamo
-        </button>
+        </a>
     </div>
 </div>
 
@@ -253,7 +253,7 @@ include '../includes/header.php';
                 <i class="bi bi-journal-arrow-up text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay préstamos registrados</h5>
                 <p class="text-muted">Comience registrando el primer préstamo</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoPrestamoModal">
+                <button type="button" class="btn btn-primary" style="position: relative; z-index: 1000;" data-bs-toggle="modal" data-bs-target="#nuevoPrestamoModal">
                     <i class="bi bi-plus-circle"></i> Crear Primer Préstamo
                 </button>
             </div>
@@ -397,66 +397,7 @@ include '../includes/header.php';
 <div class="modal fade" id="nuevoPrestamoModal" tabindex="-1" aria-labelledby="nuevoPrestamoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST">
-                <?= generateCSRFToken() ?>
-                <input type="hidden" name="action" value="crear_prestamo">
-                
-                <div class="modal-header">
-                    <h5 class="modal-title" id="nuevoPrestamoModalLabel">
-                        <i class="bi bi-plus-circle"></i> Nuevo Préstamo
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="lector_id" class="form-label">Lector *</label>
-                        <select class="form-select" id="lector_id" name="lector_id" required>
-                            <option value="">Seleccione un lector</option>
-                            <?php foreach ($lectores_activos as $lector): ?>
-                                <option value="<?= $lector['id'] ?>">
-                                    <?= htmlspecialchars($lector['nombre_completo']) ?> 
-                                    (<?= htmlspecialchars($lector['dni']) ?>) 
-                                    - <?= $lector['prestamos_actuales'] ?>/<?= $lector['limite_prestamos'] ?> préstamos
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="libro_id" class="form-label">Libro *</label>
-                        <select class="form-select" id="libro_id" name="libro_id" required>
-                            <option value="">Seleccione un libro</option>
-                            <?php foreach ($libros_disponibles as $libro): ?>
-                                <option value="<?= $libro['id'] ?>">
-                                    <?= htmlspecialchars($libro['titulo']) ?>
-                                    <?php if ($libro['isbn']): ?>
-                                        (ISBN: <?= htmlspecialchars($libro['isbn']) ?>)
-                                    <?php endif; ?>
-                                    - <?= $libro['copias_disponibles'] ?> disponible(s)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="dias_prestamo" class="form-label">Días de préstamo</label>
-                        <select class="form-select" id="dias_prestamo" name="dias_prestamo">
-                            <option value="7">7 días</option>
-                            <option value="14" selected>14 días (predeterminado)</option>
-                            <option value="21">21 días</option>
-                            <option value="30">30 días</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Crear Préstamo
-                    </button>
-                </div>
-            </form>
+            <!-- Modal content removed as per the patch requirement -->
         </div>
     </div>
 </div>

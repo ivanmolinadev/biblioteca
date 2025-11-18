@@ -45,7 +45,7 @@ try {
     
     // Obtener lectores con filtros
     $sql = "
-        SELECT l.*,
+        SELECT l.id, l.nombre, l.apellidos, l.dni, l.telefono, l.direccion, l.fecha_nacimiento, l.limite_prestamos, l.multa_total, l.bloqueado, l.fecha_registro,
                u.username, u.email,
                (SELECT COUNT(*) FROM prestamos p WHERE p.lector_id = l.id AND p.estado IN ('activo', 'atrasado')) as prestamos_activos,
                (SELECT COUNT(*) FROM prestamos p WHERE p.lector_id = l.id) as total_prestamos
@@ -77,7 +77,7 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona los lectores registrados en el sistema</p>
     </div>
     <div>
-        <a href="lector_form.php" class="btn btn-primary">
+        <a href="lector_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
             <i class="bi bi-person-plus"></i> Agregar Lector
         </a>
     </div>
@@ -155,7 +155,7 @@ include '../includes/header.php';
                     <thead>
                         <tr>
                             <th>Nombre Completo</th>
-                            <th>DNI</th>
+                                <th>ID</th>
                             <th>Contacto</th>
                             <th>Usuario Sistema</th>
                             <th>Préstamos</th>
@@ -178,6 +178,7 @@ include '../includes/header.php';
                                         <code><?= htmlspecialchars($lector['dni']) ?></code>
                                     <?php else: ?>
                                         <span class="text-muted">Sin DNI</span>
+                                            <span class="text-muted">Sin ID</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -249,11 +250,10 @@ include '../includes/header.php';
                                         </a>
                                         
                                         <?php if ($lector['prestamos_activos'] == 0): ?>
-                                            <a href="lector_delete.php?id=<?= $lector['id'] ?>" 
-                                               class="btn btn-outline-danger btn-delete"
-                                               data-bs-toggle="tooltip" 
-                                               title="Eliminar"
-                                               data-confirm="¿Está seguro de que desea eliminar este lector?">
+                                                          <a href="lector_delete.php?id=<?= $lector['id'] ?>"
+                                                              class="btn btn-outline-danger"
+                                                              data-bs-toggle="tooltip"
+                                                              title="Eliminar">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>
