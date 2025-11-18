@@ -59,6 +59,31 @@ try {
 include '../includes/header.php';
 ?>
 
+<!-- Notificaciones de éxito -->
+<?php if (isset($_GET['created']) && $_GET['created'] == '1'): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i>
+        <strong>¡Éxito!</strong> El autor ha sido creado correctamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['updated']) && $_GET['updated'] == '1'): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i>
+        <strong>¡Éxito!</strong> El autor ha sido actualizado correctamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['deleted']) && $_GET['deleted'] == '1'): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i>
+        <strong>¡Éxito!</strong> El autor ha sido eliminado correctamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 mb-0">
@@ -67,7 +92,7 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona los autores registrados en el sistema</p>
     </div>
     <div>
-        <a href="autor_form.php" class="btn btn-primary">
+        <a href="autor_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
             <i class="bi bi-plus-circle"></i> Agregar Autor
         </a>
     </div>
@@ -90,12 +115,12 @@ include '../includes/header.php';
             
             <div class="col-md-4 d-flex align-items-end">
                 <div class="me-2">
-                    <button type="submit" class="btn btn-outline-primary">
+                    <button type="submit" class="btn btn-outline-primary" style="position: relative; z-index: 1000;">
                         <i class="bi bi-search"></i> Filtrar
                     </button>
                 </div>
                 <div class="me-2">
-                    <a href="autores.php" class="btn btn-outline-secondary">
+                    <a href="autores.php" class="btn btn-outline-secondary" style="position: relative; z-index: 1000;">
                         <i class="bi bi-arrow-clockwise"></i> Limpiar
                     </a>
                 </div>
@@ -126,11 +151,20 @@ include '../includes/header.php';
                 <i class="bi bi-person-lines-fill text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay autores registrados</h5>
                 <p class="text-muted">Comience agregando el primer autor al sistema</p>
-                <a href="autor_form.php" class="btn btn-primary">
+                <a href="autor_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
                     <i class="bi bi-plus-circle"></i> Agregar Primer Autor
                 </a>
             </div>
         <?php else: ?>
+            <!-- Información para el usuario -->
+            <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <div>
+                    <strong>Información sobre eliminación:</strong> Los autores con <i class="bi bi-lock text-muted"></i> 
+                    no se pueden eliminar porque tienen libros asociados. Primero elimine los libros correspondientes.
+                </div>
+            </div>
+            
             <div class="table-responsive">
                 <table class="table table-hover" id="autoresTable">
                     <thead>
@@ -177,6 +211,7 @@ include '../includes/header.php';
                                     <div class="btn-group btn-group-sm" role="group">
                                         <a href="autor_detalle.php?id=<?= $autor['id'] ?>" 
                                            class="btn btn-outline-info"
+                                           style="position: relative; z-index: 1000;"
                                            data-bs-toggle="tooltip" 
                                            title="Ver detalles">
                                             <i class="bi bi-eye"></i>
@@ -184,6 +219,7 @@ include '../includes/header.php';
                                         
                                         <a href="autor_form.php?id=<?= $autor['id'] ?>" 
                                            class="btn btn-outline-primary"
+                                           style="position: relative; z-index: 1000;"
                                            data-bs-toggle="tooltip" 
                                            title="Editar">
                                             <i class="bi bi-pencil"></i>
@@ -192,16 +228,18 @@ include '../includes/header.php';
                                         <?php if ($autor['total_libros'] == 0): ?>
                                             <a href="autor_delete.php?id=<?= $autor['id'] ?>" 
                                                class="btn btn-outline-danger btn-delete"
+                                               style="position: relative; z-index: 1000;"
                                                data-bs-toggle="tooltip" 
-                                               title="Eliminar"
+                                               title="Eliminar autor"
                                                data-confirm="¿Está seguro de que desea eliminar este autor?">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>
                                             <button class="btn btn-outline-secondary" 
                                                     disabled
+                                                    style="position: relative; z-index: 1000;"
                                                     data-bs-toggle="tooltip" 
-                                                    title="No se puede eliminar: tiene libros asociados">
+                                                    title="No se puede eliminar: tiene <?= $autor['total_libros'] ?> libro(s) asociado(s). Primero elimine los libros.">
                                                 <i class="bi bi-lock"></i>
                                             </button>
                                         <?php endif; ?>
