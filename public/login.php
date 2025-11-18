@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($user['rol'] === 'admin') {
                     redirect('dashboard.php');
                 } else {
-                    redirect('mis_prestamos.php');
+                    redirect('dashboard.php');
                 }
                 
             } else {

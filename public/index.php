@@ -11,7 +11,7 @@ if (isAuthenticated()) {
     if (isAdmin()) {
         redirect('dashboard.php');
     } else {
-        redirect('mis_prestamos.php');
+        redirect('dashboard.php');
     }
 } else {
     // Redirigir al login
