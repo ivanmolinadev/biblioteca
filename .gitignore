@@ -1,0 +1,32 @@
+# Archivos de backup
+*_backup.php
+*_original.php
+*.bak
+
+# Archivos temporales
+*.tmp
+*.temp
+~*
+
+# Logs
+*.log
+error_log
+
+# Configuración local
+config/local_config.php
+config/dev_config.php
+
+# Cache
+cache/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
