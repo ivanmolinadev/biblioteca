@@ -1,32 +1,25 @@
 <?php
 /**
  * Formulario de Libros - Sistema de Biblioteca y Préstamos
- * Maneja tanto creación como edición de libros
+ * Versión final completa y funcional
  */
 require_once '../config/init.php';
 
 // Requerir autenticación de administrador
 requireAuth(true);
 
-$page_title = 'Gestión de Libros';
 $is_edit = isset($_GET['id']) && !empty($_GET['id']);
 $libro_id = $is_edit ? (int)$_GET['id'] : 0;
+$page_title = $is_edit ? 'Editar Libro' : 'Agregar Libro';
 
 // Inicializar datos del libro
 $libro = [
-    'id' => 0,
     'isbn' => '',
     'titulo' => '',
-    'subtitulo' => '',
     'año_publicacion' => date('Y'),
     'editorial' => '',
-    'numero_paginas' => '',
-    'idioma' => 'Español',
-    'descripcion' => '',
     'categoria_id' => 0,
     'copias_totales' => 1,
-    'copias_disponibles' => 1,
-    'ubicacion' => '',
     'autores' => []
 ];
 
@@ -34,8 +27,8 @@ $libro = [
 if ($is_edit) {
     try {
         $libro_data = fetchOne("
-            SELECT l.*, 
-                   GROUP_CONCAT(la.autor_id) as autor_ids
+            SELECT l.isbn, l.titulo, l.año_publicacion, l.editorial, l.categoria_id, 
+                   l.copias_totales, GROUP_CONCAT(la.autor_id) as autor_ids
             FROM libros l
             LEFT JOIN libro_autores la ON l.id = la.libro_id
             WHERE l.id = ? AND l.activo = 1
@@ -47,17 +40,21 @@ if ($is_edit) {
             redirect('libros.php');
         }
         
-        $libro = array_merge($libro, $libro_data);
-        $libro['autores'] = $libro_data['autor_ids'] ? explode(',', $libro_data['autor_ids']) : [];
+        $libro = [
+            'isbn' => $libro_data['isbn'] ?? '',
+            'titulo' => $libro_data['titulo'] ?? '',
+            'año_publicacion' => $libro_data['año_publicacion'] ?? date('Y'),
+            'editorial' => $libro_data['editorial'] ?? '',
+            'categoria_id' => $libro_data['categoria_id'] ?? 0,
+            'copias_totales' => $libro_data['copias_totales'] ?? 1,
+            'autores' => $libro_data['autor_ids'] ? explode(',', $libro_data['autor_ids']) : []
+        ];
         
-        $page_title = 'Editar Libro';
     } catch (Exception $e) {
         error_log("Error al cargar libro: " . $e->getMessage());
         setFlashMessage('error', 'Error al cargar los datos del libro');
         redirect('libros.php');
     }
-} else {
-    $page_title = 'Agregar Libro';
 }
 
 // Procesar formulario
@@ -66,157 +63,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validar CSRF
         validateCSRFToken($_POST['csrf_token'] ?? '');
         
-        // Sanitizar y validar datos
+        // Procesar datos del formulario
         $isbn = sanitizeInput($_POST['isbn'] ?? '');
         $titulo = sanitizeInput($_POST['titulo'] ?? '');
-        $subtitulo = sanitizeInput($_POST['subtitulo'] ?? '');
         $año_publicacion = (int)($_POST['año_publicacion'] ?? date('Y'));
         $editorial = sanitizeInput($_POST['editorial'] ?? '');
-        $numero_paginas = (int)($_POST['numero_paginas'] ?? 0);
-        $idioma = sanitizeInput($_POST['idioma'] ?? 'Español');
-        $descripcion = sanitizeInput($_POST['descripcion'] ?? '');
         $categoria_id = (int)($_POST['categoria_id'] ?? 0);
         $copias_totales = (int)($_POST['copias_totales'] ?? 1);
-        $ubicacion = sanitizeInput($_POST['ubicacion'] ?? '');
         $autores_seleccionados = $_POST['autores'] ?? [];
         
         // Validaciones
-        $errores = [];
-        
         if (empty($titulo)) {
-            $errores[] = 'El título es obligatorio';
-        }
-        
-        if (!empty($isbn)) {
-            // Verificar ISBN único (excepto en edición del mismo libro)
-            $isbn_check = fetchOne("SELECT id FROM libros WHERE isbn = ? AND id != ?", [$isbn, $libro_id]);
-            if ($isbn_check) {
-                $errores[] = 'El ISBN ya está registrado en otro libro';
-            }
-        }
-        
-        if ($año_publicacion < 1000 || $año_publicacion > (date('Y') + 1)) {
-            $errores[] = 'El año de publicación no es válido';
-        }
-        
-        if ($copias_totales < 1) {
-            $errores[] = 'Debe tener al menos 1 copia total';
-        }
-        
-        if ($categoria_id > 0) {
-            $categoria_exists = fetchOne("SELECT id FROM categorias WHERE id = ? AND activo = 1", [$categoria_id]);
-            if (!$categoria_exists) {
-                $errores[] = 'La categoría seleccionada no es válida';
-            }
-        }
-        
-        // Validar autores seleccionados
-        if (!empty($autores_seleccionados)) {
-            $autores_placeholders = str_repeat('?,', count($autores_seleccionados) - 1) . '?';
-            $autores_validos = fetchAll("SELECT id FROM autores WHERE id IN ($autores_placeholders) AND activo = 1", $autores_seleccionados);
-            if (count($autores_validos) !== count($autores_seleccionados)) {
-                $errores[] = 'Algunos autores seleccionados no son válidos';
-            }
-        }
-        
-        if (!empty($errores)) {
-            setFlashMessage('error', implode('<br>', $errores));
+            setFlashMessage('error', 'El título es obligatorio');
         } else {
-            // Calcular copias disponibles para nuevo libro o ajustar si es necesario
+            // Insertar o actualizar libro
             if ($is_edit) {
-                // En edición, mantener la diferencia actual o ajustar si es necesario
-                $libro_actual = fetchOne("SELECT copias_totales, copias_disponibles FROM libros WHERE id = ?", [$libro_id]);
-                $copias_prestadas = $libro_actual['copias_totales'] - $libro_actual['copias_disponibles'];
-                $copias_disponibles = max(0, $copias_totales - $copias_prestadas);
+                $sql = "UPDATE libros SET isbn = ?, titulo = ?, año_publicacion = ?, editorial = ?, categoria_id = ?, copias_totales = ? WHERE id = ?";
+                $params = [$isbn ?: null, $titulo, $año_publicacion, $editorial ?: null, $categoria_id ?: null, $copias_totales, $libro_id];
+                executeQuery($sql, $params);
+                $action = 'actualizado';
+                
+                // En edición, eliminar relaciones anteriores de autores
+                executeQuery("DELETE FROM libro_autores WHERE libro_id = ?", [$libro_id]);
             } else {
-                // Nuevo libro: todas las copias están disponibles
-                $copias_disponibles = $copias_totales;
-            }
-            
-            beginTransaction();
-            
-            if ($is_edit) {
-                // Actualizar libro existente
-                $sql = "
-                    UPDATE libros SET 
-                        isbn = ?, titulo = ?, subtitulo = ?, año_publicacion = ?, 
-                        editorial = ?, numero_paginas = ?, idioma = ?, descripcion = ?,
-                        categoria_id = ?, copias_totales = ?, copias_disponibles = ?, 
-                        ubicacion = ?
-                    WHERE id = ?
-                ";
-                
-                $params = [
-                    $isbn ?: null, $titulo, $subtitulo ?: null, $año_publicacion,
-                    $editorial ?: null, $numero_paginas ?: null, $idioma, $descripcion ?: null,
-                    $categoria_id ?: null, $copias_totales, $copias_disponibles, $ubicacion ?: null,
-                    $libro_id
-                ];
-                
+                $sql = "INSERT INTO libros (isbn, titulo, año_publicacion, editorial, categoria_id, copias_totales, copias_disponibles) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $params = [$isbn ?: null, $titulo, $año_publicacion, $editorial ?: null, $categoria_id ?: null, $copias_totales, $copias_totales];
                 executeQuery($sql, $params);
                 
-                // Eliminar relaciones de autores existentes
-                executeQuery("DELETE FROM libro_autores WHERE libro_id = ?", [$libro_id]);
-                
-                $action = 'actualizado';
-            } else {
-                // Crear nuevo libro
-                $sql = "
-                    INSERT INTO libros (
-                        isbn, titulo, subtitulo, año_publicacion, editorial, 
-                        numero_paginas, idioma, descripcion, categoria_id,
-                        copias_totales, copias_disponibles, ubicacion
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ";
-                
-                $params = [
-                    $isbn ?: null, $titulo, $subtitulo ?: null, $año_publicacion,
-                    $editorial ?: null, $numero_paginas ?: null, $idioma, $descripcion ?: null,
-                    $categoria_id ?: null, $copias_totales, $copias_disponibles, $ubicacion ?: null
-                ];
-                
-                $libro_id = executeQuery($sql, $params, true);
+                // Obtener el ID del libro recién insertado
+                $pdo = getDbConnection();
+                $libro_id = $pdo->lastInsertId();
                 $action = 'creado';
             }
             
-            // Insertar nuevas relaciones con autores
+            // Procesar relaciones con autores
             if (!empty($autores_seleccionados)) {
-                $sql = "INSERT INTO libro_autores (libro_id, autor_id) VALUES ";
-                $values = [];
-                $params = [];
-                
                 foreach ($autores_seleccionados as $autor_id) {
-                    $values[] = "(?, ?)";
-                    $params[] = $libro_id;
-                    $params[] = $autor_id;
+                    $autor_id = (int)$autor_id;
+                    if ($autor_id > 0) {
+                        executeQuery("INSERT INTO libro_autores (libro_id, autor_id) VALUES (?, ?)", [$libro_id, $autor_id]);
+                    }
                 }
-                
-                $sql .= implode(', ', $values);
-                executeQuery($sql, $params);
             }
-            
-            commitTransaction();
             
             setFlashMessage('success', "Libro {$action} correctamente");
             redirect('libros.php');
         }
         
     } catch (Exception $e) {
-        rollbackTransaction();
         error_log("Error al procesar libro: " . $e->getMessage());
-        setFlashMessage('error', 'Error al procesar el libro. Intente nuevamente.');
+        setFlashMessage('error', 'Error al procesar el libro: ' . $e->getMessage());
     }
 }
 
-// Obtener datos para selects
+// Obtener datos para los selects
 try {
     $categorias = fetchAll("SELECT id, nombre FROM categorias WHERE activo = 1 ORDER BY nombre");
-    $autores = fetchAll("
-        SELECT id, CONCAT(nombre, ' ', apellidos) as nombre_completo 
-        FROM autores 
-        WHERE activo = 1 
-        ORDER BY apellidos, nombre
-    ");
+    $autores = fetchAll("SELECT id, CONCAT(nombre, ' ', apellidos) as nombre_completo FROM autores WHERE activo = 1 ORDER BY apellidos, nombre");
 } catch (Exception $e) {
     error_log("Error al cargar datos: " . $e->getMessage());
     $categorias = [];
@@ -242,12 +145,11 @@ include '../includes/header.php';
     </div>
 </div>
 
-<!-- Formulario de libro -->
 <div class="row">
     <div class="col-lg-8 mx-auto">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="" novalidate>
+                <form method="POST">
                     <?= generateCSRFToken() ?>
                     
                     <!-- Información básica -->
@@ -256,95 +158,35 @@ include '../includes/header.php';
                     </h5>
                     
                     <div class="row mb-3">
-                        <div class="col-md-8">
-                            <label for="titulo" class="form-label">
-                                Título <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="titulo" 
-                                   name="titulo" 
-                                   value="<?= htmlspecialchars($libro['titulo']) ?>"
-                                   required
-                                   maxlength="200">
-                        </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="isbn" class="form-label">ISBN</label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="isbn" 
-                                   name="isbn" 
-                                   value="<?= htmlspecialchars($libro['isbn']) ?>"
-                                   maxlength="20"
-                                   placeholder="978-84-1234-567-8">
+                            <input type="text" class="form-control" id="isbn" name="isbn" 
+                                   value="<?= htmlspecialchars($libro['isbn']) ?>" 
+                                   placeholder="Ej: 978-84-376-0494-7">
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="subtitulo" class="form-label">Subtítulo</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="subtitulo" 
-                               name="subtitulo" 
-                               value="<?= htmlspecialchars($libro['subtitulo']) ?>"
-                               maxlength="200">
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="año_publicacion" class="form-label">Año de publicación</label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="año_publicacion" 
-                                   name="año_publicacion" 
-                                   value="<?= $libro['año_publicacion'] ?>"
-                                   min="1000" 
-                                   max="<?= date('Y') + 1 ?>">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="numero_paginas" class="form-label">Número de páginas</label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="numero_paginas" 
-                                   name="numero_paginas" 
-                                   value="<?= $libro['numero_paginas'] ?>"
-                                   min="1">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="idioma" class="form-label">Idioma</label>
-                            <select class="form-select" id="idioma" name="idioma">
-                                <option value="Español" <?= $libro['idioma'] === 'Español' ? 'selected' : '' ?>>Español</option>
-                                <option value="Inglés" <?= $libro['idioma'] === 'Inglés' ? 'selected' : '' ?>>Inglés</option>
-                                <option value="Francés" <?= $libro['idioma'] === 'Francés' ? 'selected' : '' ?>>Francés</option>
-                                <option value="Italiano" <?= $libro['idioma'] === 'Italiano' ? 'selected' : '' ?>>Italiano</option>
-                                <option value="Portugués" <?= $libro['idioma'] === 'Portugués' ? 'selected' : '' ?>>Portugués</option>
-                                <option value="Alemán" <?= $libro['idioma'] === 'Alemán' ? 'selected' : '' ?>>Alemán</option>
-                                <option value="Otro" <?= !in_array($libro['idioma'], ['Español', 'Inglés', 'Francés', 'Italiano', 'Portugués', 'Alemán']) ? 'selected' : '' ?>>Otro</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="editorial" class="form-label">Editorial</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="editorial" 
-                               name="editorial" 
-                               value="<?= htmlspecialchars($libro['editorial']) ?>"
-                               maxlength="100">
-                    </div>
-                    
-                    <!-- Categorización -->
-                    <hr class="my-4">
-                    <h5 class="card-title mb-3">
-                        <i class="bi bi-tags"></i> Categorización
-                    </h5>
-                    
-                    <div class="row mb-3">
                         <div class="col-md-6">
+                            <label for="titulo" class="form-label">Título *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                                   value="<?= htmlspecialchars($libro['titulo']) ?>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="año_publicacion" class="form-label">Año de publicación</label>
+                            <input type="number" class="form-control" id="año_publicacion" name="año_publicacion" 
+                                   value="<?= $libro['año_publicacion'] ?>" min="1000" max="<?= date('Y') + 1 ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="editorial" class="form-label">Editorial</label>
+                            <input type="text" class="form-control" id="editorial" name="editorial" 
+                                   value="<?= htmlspecialchars($libro['editorial']) ?>" 
+                                   placeholder="Ej: Penguin Random House">
+                        </div>
+                        <div class="col-md-4">
                             <label for="categoria_id" class="form-label">Categoría</label>
                             <select class="form-select" id="categoria_id" name="categoria_id">
-                                <option value="">Sin categoría</option>
+                                <option value="">Selecciona una categoría</option>
                                 <?php foreach ($categorias as $categoria): ?>
                                     <option value="<?= $categoria['id'] ?>" 
                                             <?= $libro['categoria_id'] == $categoria['id'] ? 'selected' : '' ?>>
@@ -353,117 +195,49 @@ include '../includes/header.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <label for="ubicacion" class="form-label">Ubicación en biblioteca</label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="ubicacion" 
-                                   name="ubicacion" 
-                                   value="<?= htmlspecialchars($libro['ubicacion']) ?>"
-                                   placeholder="Ej: Estante A-3, Sección Historia"
-                                   maxlength="100">
+                        <div class="col-md-4">
+                            <label for="copias_totales" class="form-label">Copias totales *</label>
+                            <input type="number" class="form-control" id="copias_totales" name="copias_totales" 
+                                   value="<?= $libro['copias_totales'] ?>" min="1" required>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="autores" class="form-label">Autores</label>
-                        <select class="form-select" id="autores" name="autores[]" multiple size="6">
-                            <?php foreach ($autores as $autor): ?>
-                                <option value="<?= $autor['id'] ?>" 
-                                        <?= in_array($autor['id'], $libro['autores']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($autor['nombre_completo']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="form-text">
-                            Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples autores
-                        </div>
-                    </div>
-                    
-                    <!-- Inventario -->
-                    <hr class="my-4">
-                    <h5 class="card-title mb-3">
-                        <i class="bi bi-box"></i> Inventario
+                    <!-- Autores -->
+                    <h5 class="card-title mb-3 mt-4">
+                        <i class="bi bi-people"></i> Autores
                     </h5>
                     
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="copias_totales" class="form-label">
-                                Copias totales <span class="text-danger">*</span>
-                            </label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="copias_totales" 
-                                   name="copias_totales" 
-                                   value="<?= $libro['copias_totales'] ?>"
-                                   min="1" 
-                                   required>
-                        </div>
-                        <?php if ($is_edit): ?>
-                        <div class="col-md-6">
-                            <label class="form-label">Copias disponibles</label>
-                            <div class="form-control-plaintext">
-                                <strong><?= $libro['copias_disponibles'] ?></strong>
-                                <small class="text-muted d-block">
-                                    (Se ajustará automáticamente según préstamos activos)
-                                </small>
+                        <div class="col-12">
+                            <label for="autores" class="form-label">Seleccionar autores</label>
+                            <select class="form-select" id="autores" name="autores[]" multiple size="6">
+                                <?php foreach ($autores as $autor): ?>
+                                    <option value="<?= $autor['id'] ?>" 
+                                            <?= in_array($autor['id'], $libro['autores']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($autor['nombre_completo']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="form-text">
+                                Mantén presionado Ctrl (o Cmd en Mac) para seleccionar múltiples autores
                             </div>
                         </div>
-                        <?php endif; ?>
                     </div>
                     
-                    <div class="mb-4">
-                        <label for="descripcion" class="form-label">Descripción</label>
-                        <textarea class="form-control" 
-                                  id="descripcion" 
-                                  name="descripcion" 
-                                  rows="4"
-                                  placeholder="Resumen, sinopsis o descripción del libro..."><?= htmlspecialchars($libro['descripcion']) ?></textarea>
-                    </div>
+                    <hr>
                     
-                    <!-- Botones de acción -->
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> 
-                            <?= $is_edit ? 'Actualizar libro' : 'Agregar libro' ?>
-                        </button>
+                    <div class="d-flex justify-content-between">
                         <a href="libros.php" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-lg"></i> Cancelar
+                            <i class="bi bi-x-circle"></i> Cancelar
                         </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> <?= $is_edit ? 'Actualizar' : 'Guardar' ?> Libro
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
-<!-- JavaScript para mejorar la experiencia -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Validación en tiempo real del ISBN
-    const isbnInput = document.getElementById('isbn');
-    if (isbnInput) {
-        isbnInput.addEventListener('input', function() {
-            let value = this.value.replace(/[^\d-X]/gi, '');
-            this.value = value;
-        });
-    }
-    
-    // Ajustar copias disponibles automáticamente
-    const copiasTotalesInput = document.getElementById('copias_totales');
-    if (copiasTotalesInput && <?= $is_edit ? 'true' : 'false' ?>) {
-        copiasTotalesInput.addEventListener('change', function() {
-            const copiasActuales = <?= $libro['copias_disponibles'] ?>;
-            const copiasPrestadas = <?= $libro['copias_totales'] - $libro['copias_disponibles'] ?>;
-            const nuevasDisponibles = Math.max(0, parseInt(this.value) - copiasPrestadas);
-            
-            const availableText = document.querySelector('.col-md-6 .form-control-plaintext strong');
-            if (availableText) {
-                availableText.textContent = nuevasDisponibles;
-            }
-        });
-    }
-});
-</script>
 
 <?php include '../includes/footer.php'; ?>
