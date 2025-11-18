@@ -8,12 +8,38 @@ $errors = [];
 $success = false;
 $lectores = [];
 $libros = [];
+
 $prestamo = [
     'lector_id' => '',
     'libro_id' => '',
     'fecha_prestamo' => date('Y-m-d'),
+    'fecha_vencimiento' => date('Y-m-d', strtotime('+14 days')),
     'fecha_devolucion' => '',
 ];
+$editMode = false;
+$prestamoId = null;
+
+// Si viene id por GET, cargar datos del préstamo
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $prestamoId = (int)$_GET['id'];
+    $stmt = $db->prepare('SELECT * FROM prestamos WHERE id = ?');
+    $stmt->execute([$prestamoId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row) {
+        $prestamo = [
+            'lector_id' => $row['lector_id'],
+            'libro_id' => $row['libro_id'],
+            'fecha_prestamo' => $row['fecha_prestamo'],
+            'fecha_vencimiento' => $row['fecha_vencimiento'],
+            'fecha_devolucion' => $row['fecha_devolucion'],
+        ];
+        $editMode = true;
+    } else {
+        setFlashMessage('error', 'Préstamo no encontrado.');
+        header('Location: prestamos.php');
+        exit;
+    }
+}
 
 // Obtener lectores activos
 try {
@@ -23,57 +49,78 @@ try {
     $errors[] = 'Error al cargar lectores o libros: ' . $e->getMessage();
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lector_id = (int)($_POST['lector_id'] ?? 0);
     $libro_id = (int)($_POST['libro_id'] ?? 0);
     $fecha_prestamo = trim($_POST['fecha_prestamo'] ?? '');
+    $fecha_vencimiento = trim($_POST['fecha_vencimiento'] ?? '');
     $fecha_devolucion = trim($_POST['fecha_devolucion'] ?? '');
 
     if (!$lector_id) $errors[] = 'Debe seleccionar un lector.';
     if (!$libro_id) $errors[] = 'Debe seleccionar un libro.';
     if (!$fecha_prestamo || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_prestamo)) $errors[] = 'La fecha de préstamo es obligatoria y debe tener formato válido.';
+    if (!$fecha_vencimiento || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_vencimiento)) $errors[] = 'La fecha de vencimiento es obligatoria y debe tener formato válido.';
     if ($fecha_devolucion && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_devolucion)) $errors[] = 'La fecha de devolución debe tener formato válido.';
 
-    // Validar disponibilidad de libro
-    $stmt = $db->prepare('SELECT copias_disponibles FROM libros WHERE id = ?');
-    $stmt->execute([$libro_id]);
-    $libro = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$libro || $libro['copias_disponibles'] < 1) {
-        $errors[] = 'El libro seleccionado no está disponible.';
+    // Validar disponibilidad de libro solo si es nuevo préstamo o cambia el libro
+    if (!$editMode || $libro_id != $prestamo['libro_id']) {
+        $stmt = $db->prepare('SELECT copias_disponibles FROM libros WHERE id = ?');
+        $stmt->execute([$libro_id]);
+        $libro = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$libro || $libro['copias_disponibles'] < 1) {
+            $errors[] = 'El libro seleccionado no está disponible.';
+        }
     }
 
-    // Validar límite de préstamos del lector
-    $stmt = $db->prepare('SELECT limite_prestamos FROM lectores WHERE id = ?');
-    $stmt->execute([$lector_id]);
-    $lector = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($lector) {
-        $stmt = $db->prepare('SELECT COUNT(*) as total FROM prestamos WHERE lector_id = ? AND estado IN ("activo", "atrasado")');
+    // Validar límite de préstamos del lector solo si es nuevo préstamo o cambia el lector
+    if (!$editMode || $lector_id != $prestamo['lector_id']) {
+        $stmt = $db->prepare('SELECT limite_prestamos FROM lectores WHERE id = ?');
         $stmt->execute([$lector_id]);
-        $prestamos_activos = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-        if ($prestamos_activos >= $lector['limite_prestamos']) {
-            $errors[] = 'El lector ya alcanzó su límite de préstamos activos.';
+        $lector = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($lector) {
+            $stmt = $db->prepare('SELECT COUNT(*) as total FROM prestamos WHERE lector_id = ? AND estado IN ("activo", "atrasado")');
+            $stmt->execute([$lector_id]);
+            $prestamos_activos = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            if ($prestamos_activos >= $lector['limite_prestamos']) {
+                $errors[] = 'El lector ya alcanzó su límite de préstamos activos.';
+            }
         }
     }
 
     if (empty($errors)) {
         try {
             $db->beginTransaction();
-            $stmt = $db->prepare('INSERT INTO prestamos (lector_id, libro_id, fecha_prestamo, fecha_devolucion, estado) VALUES (?, ?, ?, ?, "activo")');
-            $stmt->execute([$lector_id, $libro_id, $fecha_prestamo, $fecha_devolucion ?: null]);
-            $stmt = $db->prepare('UPDATE libros SET copias_disponibles = copias_disponibles - 1 WHERE id = ?');
-            $stmt->execute([$libro_id]);
+            if ($editMode) {
+                $stmt = $db->prepare('UPDATE prestamos SET lector_id=?, libro_id=?, fecha_prestamo=?, fecha_vencimiento=?, fecha_devolucion=? WHERE id=?');
+                $stmt->execute([$lector_id, $libro_id, $fecha_prestamo, $fecha_vencimiento, $fecha_devolucion ?: null, $prestamoId]);
+                setFlashMessage('success', 'Préstamo actualizado correctamente.');
+            } else {
+                $stmt = $db->prepare('INSERT INTO prestamos (lector_id, libro_id, fecha_prestamo, fecha_vencimiento, fecha_devolucion, estado) VALUES (?, ?, ?, ?, ?, "activo")');
+                $stmt->execute([$lector_id, $libro_id, $fecha_prestamo, $fecha_vencimiento, $fecha_devolucion ?: null]);
+                $stmt = $db->prepare('UPDATE libros SET copias_disponibles = copias_disponibles - 1 WHERE id = ?');
+                $stmt->execute([$libro_id]);
+                setFlashMessage('success', 'Préstamo registrado correctamente.');
+            }
             $db->commit();
-            setFlashMessage('success', 'Préstamo registrado correctamente.');
             header('Location: prestamos.php');
             exit;
         } catch (PDOException $e) {
             $db->rollBack();
-            $errors[] = 'Error al registrar el préstamo: ' . $e->getMessage();
+            $errors[] = 'Error al guardar el préstamo: ' . $e->getMessage();
         }
     }
+    // Repoblar campos en caso de error
+    $prestamo = [
+        'lector_id' => $lector_id,
+        'libro_id' => $libro_id,
+        'fecha_prestamo' => $fecha_prestamo,
+        'fecha_vencimiento' => $fecha_vencimiento,
+        'fecha_devolucion' => $fecha_devolucion,
+    ];
 }
 
-$pageTitle = 'Registrar Préstamo';
+$pageTitle = $editMode ? 'Editar Préstamo' : 'Registrar Préstamo';
 include '../includes/header.php';
 ?>
 <div class="container-fluid">
@@ -118,6 +165,10 @@ include '../includes/header.php';
                         <div class="mb-3">
                             <label for="fecha_prestamo" class="form-label">Fecha de Préstamo</label>
                             <input type="date" class="form-control" id="fecha_prestamo" name="fecha_prestamo" required value="<?= htmlspecialchars($prestamo['fecha_prestamo']) ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha_vencimiento" class="form-label">Fecha de Vencimiento</label>
+                            <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" required value="<?= htmlspecialchars($prestamo['fecha_vencimiento']) ?>">
                         </div>
                         <div class="mb-3">
                             <label for="fecha_devolucion" class="form-label">Fecha de Devolución (opcional)</label>
