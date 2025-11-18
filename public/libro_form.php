@@ -129,20 +129,13 @@ try {
 include '../includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-2">
-            <i class="bi bi-book"></i> <?= $page_title ?>
-        </h1>
-        <p class="text-muted mb-0">
-            <?= $is_edit ? 'Edita la información del libro seleccionado' : 'Completa los datos para agregar un nuevo libro' ?>
-        </p>
-    </div>
-    <div>
-        <a href="libros.php" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver al listado
-        </a>
-    </div>
+<div class="mb-4">
+    <h1 class="h3 mb-2">
+        <i class="bi bi-book"></i> <?= $page_title ?>
+    </h1>
+    <p class="text-muted mb-0">
+        <?= $is_edit ? 'Edita la información del libro seleccionado' : 'Completa los datos para agregar un nuevo libro' ?>
+    </p>
 </div>
 
 <div class="row">
@@ -150,11 +143,11 @@ include '../includes/header.php';
         <div class="card">
             <div class="card-body">
                 <form method="POST">
-                    <?= generateCSRFToken() ?>
+                    <?= csrfTokenField() ?>
                     
-                    <!-- Información básica -->
+                    <!-- Información del libro -->
                     <h5 class="card-title mb-3">
-                        <i class="bi bi-info-circle"></i> Información básica
+                        <i class="bi bi-info-circle"></i> Información del libro
                     </h5>
                     
                     <div class="row mb-3">
