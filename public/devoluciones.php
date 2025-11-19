@@ -162,11 +162,7 @@ include '../includes/header.php';
         </h1>
         <p class="text-muted mb-0">Gestiona las devoluciones y el cálculo de multas</p>
     </div>
-    <div>
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaDevolucionModal">
-            <i class="bi bi-arrow-return-left"></i> Registrar Devolución
-        </button>
-    </div>
+
 </div>
 
 <!-- Filtros de búsqueda -->
@@ -228,9 +224,7 @@ include '../includes/header.php';
                 <i class="bi bi-journal-arrow-down text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay devoluciones registradas</h5>
                 <p class="text-muted">Comience registrando la primera devolución</p>
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaDevolucionModal">
-                    <i class="bi bi-arrow-return-left"></i> Registrar Primera Devolución
-                </button>
+
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -244,7 +238,7 @@ include '../includes/header.php';
                             <th>Días Atraso</th>
                             <th>Multa Total</th>
                             <th>Estado</th>
-                            <th width="150">Acciones</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -297,24 +291,7 @@ include '../includes/header.php';
                                         <?= formatDate($devolucion['fecha_creacion'], 'd/m/Y H:i') ?>
                                     </small>
                                 </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="devolucion_detalle.php?id=<?= $devolucion['id'] ?>" 
-                                           class="btn btn-outline-info"
-                                           data-bs-toggle="tooltip" 
-                                           title="Ver detalles">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        
-                                        <a href="devolucion_recibo.php?id=<?= $devolucion['id'] ?>" 
-                                           class="btn btn-outline-primary"
-                                           data-bs-toggle="tooltip" 
-                                           title="Generar recibo"
-                                           target="_blank">
-                                            <i class="bi bi-receipt"></i>
-                                        </a>
-                                    </div>
-                                </td>
+
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

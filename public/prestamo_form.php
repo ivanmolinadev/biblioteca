@@ -44,7 +44,14 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 // Obtener lectores activos
 try {
     $lectores = $db->query("SELECT id, nombre, apellidos FROM lectores WHERE bloqueado = 0 ORDER BY nombre, apellidos")->fetchAll(PDO::FETCH_ASSOC);
-    $libros = $db->query("SELECT id, titulo FROM libros WHERE activo = 1 AND copias_disponibles > 0 ORDER BY titulo")->fetchAll(PDO::FETCH_ASSOC);
+    // Si es edición, incluir el libro original aunque no tenga copias disponibles
+    if ($editMode && !empty($prestamo['libro_id'])) {
+        $stmt = $db->prepare("SELECT id, titulo FROM libros WHERE (activo = 1 AND (copias_disponibles > 0 OR id = ?)) ORDER BY titulo");
+        $stmt->execute([$prestamo['libro_id']]);
+        $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $libros = $db->query("SELECT id, titulo FROM libros WHERE activo = 1 AND copias_disponibles > 0 ORDER BY titulo")->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (PDOException $e) {
     $errors[] = 'Error al cargar lectores o libros: ' . $e->getMessage();
 }
@@ -92,19 +99,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $db->beginTransaction();
             if ($editMode) {
+                // Solo actualizar préstamo, no modificar copias
                 $stmt = $db->prepare('UPDATE prestamos SET lector_id=?, libro_id=?, fecha_prestamo=?, fecha_vencimiento=?, fecha_devolucion=? WHERE id=?');
                 $stmt->execute([$lector_id, $libro_id, $fecha_prestamo, $fecha_vencimiento, $fecha_devolucion ?: null, $prestamoId]);
                 setFlashMessage('success', 'Préstamo actualizado correctamente.');
             } else {
-                $stmt = $db->prepare('INSERT INTO prestamos (lector_id, libro_id, fecha_prestamo, fecha_vencimiento, fecha_devolucion, estado) VALUES (?, ?, ?, ?, ?, "activo")');
-                $stmt->execute([$lector_id, $libro_id, $fecha_prestamo, $fecha_vencimiento, $fecha_devolucion ?: null]);
-                $stmt = $db->prepare('UPDATE libros SET copias_disponibles = copias_disponibles - 1 WHERE id = ?');
-                $stmt->execute([$libro_id]);
-                setFlashMessage('success', 'Préstamo registrado correctamente.');
+                // Verificar si ya existe un préstamo igual para evitar duplicados exactos (lector, libro, fecha_prestamo, estado activo)
+                $stmt = $db->prepare('SELECT COUNT(*) FROM prestamos WHERE lector_id = ? AND libro_id = ? AND fecha_prestamo = ? AND estado = "activo"');
+                $stmt->execute([$lector_id, $libro_id, $fecha_prestamo]);
+                $existe = $stmt->fetchColumn();
+                if ($existe > 0) {
+                    $errors[] = 'Ya existe un préstamo activo para este lector, libro y fecha.';
+                    $db->rollBack();
+                } else {
+                    // Nuevo préstamo: insertar, el trigger en la base de datos descuenta la copia
+                    $stmt = $db->prepare('INSERT INTO prestamos (lector_id, libro_id, fecha_prestamo, fecha_vencimiento, fecha_devolucion, estado) VALUES (?, ?, ?, ?, ?, "activo")');
+                    $stmt->execute([$lector_id, $libro_id, $fecha_prestamo, $fecha_vencimiento, $fecha_devolucion ?: null]);
+                    setFlashMessage('success', 'Préstamo registrado correctamente.');
+                    $db->commit();
+                    header('Location: prestamos.php');
+                    exit;
+                }
             }
-            $db->commit();
-            header('Location: prestamos.php');
-            exit;
+            if (empty($errors)) {
+                $db->commit();
+                header('Location: prestamos.php');
+                exit;
+            }
         } catch (PDOException $e) {
             $db->rollBack();
             $errors[] = 'Error al guardar el préstamo: ' . $e->getMessage();
@@ -142,7 +163,7 @@ include '../includes/header.php';
                             </ul>
                         </div>
                     <?php endif; ?>
-                    <form method="POST" autocomplete="off">
+                    <form method="POST" autocomplete="off" id="prestamoForm">
                         <?= csrfTokenField() ?>
                         <div class="mb-3">
                             <label for="lector_id" class="form-label">Lector</label>
@@ -178,7 +199,7 @@ include '../includes/header.php';
                             <a href="prestamos.php" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Volver
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="btnGuardar">
                                 <i class="bi bi-save"></i> Guardar
                             </button>
                         </div>
@@ -188,4 +209,17 @@ include '../includes/header.php';
         </div>
     </div>
 </div>
+<script>
+// Protección contra doble envío del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('prestamoForm');
+    var btn = document.getElementById('btnGuardar');
+    if (form && btn) {
+        form.addEventListener('submit', function() {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+        });
+    }
+});
+</script>
 <?php include '../includes/footer.php'; ?>

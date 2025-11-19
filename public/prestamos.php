@@ -52,8 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 VALUES (?, ?, CURDATE(), ?, 'activo', ?)";
         executeQuery($sql, [$libro_id, $lector_id, $fecha_vencimiento, getCurrentUser()['id']]);
         
-        // Actualizar copias disponibles
-        executeQuery("UPDATE libros SET copias_disponibles = copias_disponibles - 1 WHERE id = ?", [$libro_id]);
         
         setFlashMessage('success', 'Préstamo registrado exitosamente');
         redirect('prestamos.php');
@@ -180,7 +178,7 @@ try {
 include '../includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
     <div>
         <h1 class="h3 mb-0">
             <i class="bi bi-journal-arrow-up"></i> <?= $page_title ?>
@@ -188,7 +186,7 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona los préstamos activos y el historial</p>
     </div>
     <div>
-        <a href="prestamo_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
+        <a href="prestamo_form.php" class="btn btn-primary" style="position: relative; z-index: 9999;">
             <i class="bi bi-plus-circle"></i> Nuevo Préstamo
         </a>
     </div>
@@ -319,12 +317,7 @@ include '../includes/header.php';
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="prestamo_detalle.php?id=<?= $prestamo['id'] ?>" 
-                                           class="btn btn-outline-info"
-                                           data-bs-toggle="tooltip" 
-                                           title="Ver detalles">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                        <!-- Botón de ver eliminado -->
                                         
                                         <?php if ($prestamo['estado'] === 'activo' || $prestamo['estado_real'] === 'atrasado'): ?>
                                             <a href="devolucion_form.php?prestamo_id=<?= $prestamo['id'] ?>" 

@@ -1,3 +1,22 @@
+.navbar .dropdown-menu-end {
+    margin-right: 180px !important; /* Ajusta este valor según el ancho del botón y separación deseada */
+}
+/* Forzar stacking context para el menú de usuario en la navbar */
+.navbar {
+    position: relative;
+    z-index: 1;
+}
+
+/* Menú usuario: stacking context y z-index solo cuando está abierto */
+.navbar .dropdown-menu {
+    pointer-events: none;
+    position: absolute;
+    z-index: 1055 !important;
+}
+.navbar .dropdown-menu.show {
+    pointer-events: auto;
+    z-index: 5000 !important;
+}
 /* Forzar z-index alto para el formulario de devolución */
 .z-top-form {
     position: relative;
@@ -63,6 +82,8 @@ body {
     border: none;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     border-radius: var(--border-radius);
+    z-index: 1055 !important; /* Mayor que cualquier botón, y mayor que Bootstrap modal backdrop (1040) */
+    position: absolute;
 }
 
 /* Contenido principal */

@@ -95,7 +95,7 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                 </ul>
                 
                 <!-- Menú usuario -->
-                <ul class="navbar-nav">
+                <ul class="navbar-nav" style="position: relative; left: -300px;">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle"></i> <?= htmlspecialchars($current_user['username']) ?>
