@@ -28,16 +28,13 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
 <body>
     <!-- Navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-1">
-        <div class="container-fluid px-3">
-            <a class="navbar-brand me-auto" href="dashboard.php">
-                <i class="bi bi-book"></i> Biblioteca
-            </a>
-            
-            <?php if (isAuthenticated()): ?>
+        <a class="navbar-brand me-auto" href="dashboard.php">
+            <i class="bi bi-book"></i> Biblioteca
+        </a>
+        <?php if (isAuthenticated()): ?>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
@@ -45,7 +42,6 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                             <i class="bi bi-house"></i> Inicio
                         </a>
                     </li>
-                    
                     <?php if (isAdmin()): ?>
                     <!-- Navegación simplificada para Admin - Módulos principales -->
                     <li class="nav-item">
@@ -78,7 +74,6 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                             <i class="bi bi-journal-arrow-down"></i> Devoluciones
                         </a>
                     </li>
-                    
                     <?php else: ?>
                     <!-- Menú para usuarios regulares (lectores) -->
                     <li class="nav-item">
@@ -93,14 +88,13 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                     </li>
                     <?php endif; ?>
                 </ul>
-                
                 <!-- Menú usuario -->
-                <ul class="navbar-nav" style="position: relative; left: -300px;">
+                <ul class="navbar-nav" style="margin-right: 6rem;">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle"></i> <?= htmlspecialchars($current_user['username']) ?>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu">
                             <li><h6 class="dropdown-header">
                                 <?= htmlspecialchars($current_user['username']) ?><br>
                                 <small class="text-muted"><?= ucfirst($current_user['role']) ?></small>
@@ -111,12 +105,11 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                     </li>
                 </ul>
             </div>
-            <?php endif; ?>
-        </div>
+        <?php endif; ?>
     </nav>
 
     <!-- Contenedor principal -->
-    <div class="container-fluid py-4">
+    <div class="container-fluid py-4 main-content">
         <!-- Mostrar mensajes flash -->
         <?php 
         $flash_messages = getFlashMessages();

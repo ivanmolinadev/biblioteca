@@ -1,6 +1,14 @@
-.navbar .dropdown-menu-end {
-    margin-right: 180px !important; /* Ajusta este valor según el ancho del botón y separación deseada */
+/* Alinea el menú de usuario justo debajo del botón de usuario en la navbar */
+.navbar-nav.ms-auto .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
 }
+/* Corrige la alineación del menú de usuario en la navbar */
+.navbar .dropdown-menu-end {
+    right: 0 !important;
+    left: auto !important;
+}
+/* Elimina el margin-right forzado para dropdown-menu-end y usa la posición estándar de Bootstrap */
 /* Forzar stacking context para el menú de usuario en la navbar */
 .navbar {
     position: relative;
@@ -87,7 +95,7 @@ body {
 }
 
 /* Contenido principal */
-.container-fluid {
+.main-content {
     min-height: calc(100vh - 200px);
 }
 

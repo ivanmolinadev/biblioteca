@@ -100,7 +100,7 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona el catálogo de libros de la biblioteca</p>
     </div>
     <div>
-        <a href="libro_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
+        <a href="libro_form.php" class="btn btn-primary" >
             <i class="bi bi-plus-circle"></i> Agregar Libro
         </a>
     </div>
