@@ -4,8 +4,8 @@
  */
 require_once '../config/init.php';
 
-// Requerir autenticación de administrador
-requireAuth(true);
+// Requerir autenticación (sin restricción de rol)
+requireAuth();
 
 $page_title = 'Gestión de Categorías';
 
@@ -66,11 +66,13 @@ include '../includes/header.php';
         </h1>
         <p class="text-muted mb-0">Gestiona las categorías para clasificar los libros</p>
     </div>
+    <?php if (isAdmin()): ?>
     <div>
-        <a href="categoria_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
+        <a href="categoria_form.php" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Agregar Categoría
         </a>
     </div>
+    <?php endif; ?>
 </div>
 
 <!-- Filtros de búsqueda -->
@@ -114,9 +116,11 @@ include '../includes/header.php';
                 <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay categorías registradas</h5>
                 <p class="text-muted">Comience agregando la primera categoría al sistema</p>
+                <?php if (isAdmin()): ?>
                 <a href="categoria_form.php" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Agregar Primera Categoría
                 </a>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -161,28 +165,28 @@ include '../includes/header.php';
                                            title="Ver detalles">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        
-                                        <a href="categoria_form.php?id=<?= $categoria['id'] ?>" 
-                                           class="btn btn-outline-primary"
-                                           data-bs-toggle="tooltip" 
-                                           title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        
-                                        <?php if ($categoria['total_libros'] == 0): ?>
-                                            <a href="categoria_delete.php?id=<?= $categoria['id'] ?>" 
-                                               class="btn btn-outline-danger"
+                                        <?php if (isAdmin()): ?>
+                                            <a href="categoria_form.php?id=<?= $categoria['id'] ?>" 
+                                               class="btn btn-outline-primary"
                                                data-bs-toggle="tooltip" 
-                                               title="Eliminar">
-                                                <i class="bi bi-trash"></i>
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
                                             </a>
-                                        <?php else: ?>
-                                            <button class="btn btn-outline-secondary" 
-                                                    disabled
-                                                    data-bs-toggle="tooltip" 
-                                                    title="No se puede eliminar: tiene libros asociados">
-                                                <i class="bi bi-lock"></i>
-                                            </button>
+                                            <?php if ($categoria['total_libros'] == 0): ?>
+                                                <a href="categoria_delete.php?id=<?= $categoria['id'] ?>" 
+                                                   class="btn btn-outline-danger"
+                                                   data-bs-toggle="tooltip" 
+                                                   title="Eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            <?php else: ?>
+                                                <button class="btn btn-outline-secondary" 
+                                                        disabled
+                                                        data-bs-toggle="tooltip" 
+                                                        title="No se puede eliminar: tiene libros asociados">
+                                                    <i class="bi bi-lock"></i>
+                                                </button>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </td>

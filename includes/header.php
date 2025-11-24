@@ -28,7 +28,7 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
 <body>
     <!-- Navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-1">
-        <a class="navbar-brand me-auto" href="dashboard.php">
+        <a class="navbar-brand me-auto" href="dashboard.php" style="margin-left: 1rem;">
             <i class="bi bi-book"></i> Biblioteca
         </a>
         <?php if (isAuthenticated()): ?>
@@ -42,8 +42,7 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                             <i class="bi bi-house"></i> Inicio
                         </a>
                     </li>
-                    <?php if (isAdmin()): ?>
-                    <!-- Navegación simplificada para Admin - Módulos principales -->
+                    <!-- Menú principal: siempre mostrar todos los módulos -->
                     <li class="nav-item">
                         <a class="nav-link" href="libros.php">
                             <i class="bi bi-book"></i> Libros
@@ -74,19 +73,6 @@ $page_title = $page_title ?? 'Sistema de Biblioteca';
                             <i class="bi bi-journal-arrow-down"></i> Devoluciones
                         </a>
                     </li>
-                    <?php else: ?>
-                    <!-- Menú para usuarios regulares (lectores) -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="libros.php">
-                            <i class="bi bi-search"></i> Catálogo de Libros
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="mis_prestamos.php">
-                            <i class="bi bi-journal-text"></i> Mis Préstamos
-                        </a>
-                    </li>
-                    <?php endif; ?>
                 </ul>
                 <!-- Menú usuario -->
                 <ul class="navbar-nav" style="margin-right: 6rem;">

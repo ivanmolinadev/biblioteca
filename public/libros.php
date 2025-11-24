@@ -4,8 +4,8 @@
  */
 require_once '../config/init.php';
 
-// Requerir autenticación de administrador
-requireAuth(true);
+// Requerir autenticación (sin restricción de rol)
+requireAuth();
 
 $page_title = 'Gestión de Libros';
 
@@ -100,9 +100,11 @@ include '../includes/header.php';
         <p class="text-muted mb-0">Gestiona el catálogo de libros de la biblioteca</p>
     </div>
     <div>
+        <?php if (isAdmin()): ?>
         <a href="libro_form.php" class="btn btn-primary" >
             <i class="bi bi-plus-circle"></i> Agregar Libro
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -188,9 +190,11 @@ include '../includes/header.php';
                 <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay libros registrados</h5>
                 <p class="text-muted">Comience agregando el primer libro al catálogo</p>
+                <?php if (isAdmin()): ?>
                 <a href="libro_form.php" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Agregar Primer Libro
                 </a>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -252,7 +256,7 @@ include '../includes/header.php';
                                            title="Ver detalles">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        
+                                        <?php if (isAdmin()): ?>
                                         <a href="libro_form.php?id=<?= $libro['id'] ?>" 
                                            class="btn btn-outline-primary"
                                            data-bs-toggle="tooltip" 
@@ -274,6 +278,7 @@ include '../includes/header.php';
                                                     title="No se puede eliminar: tiene préstamos activos">
                                                 <i class="bi bi-lock"></i>
                                             </button>
+                                        <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </td>

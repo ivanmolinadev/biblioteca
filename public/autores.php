@@ -4,8 +4,8 @@
  */
 require_once '../config/init.php';
 
-// Requerir autenticación de administrador
-requireAuth(true);
+// Requerir autenticación (sin restricción de rol)
+requireAuth();
 
 $page_title = 'Gestión de Autores';
 
@@ -91,11 +91,13 @@ include '../includes/header.php';
         </h1>
         <p class="text-muted mb-0">Gestiona los autores registrados en el sistema</p>
     </div>
+    <?php if (isAdmin()): ?>
     <div>
-        <a href="autor_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
+        <a href="autor_form.php" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Agregar Autor
         </a>
     </div>
+    <?php endif; ?>
 </div>
 
 <!-- Autores -->
@@ -136,9 +138,11 @@ include '../includes/header.php';
                 <i class="bi bi-person-lines-fill text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay autores registrados</h5>
                 <p class="text-muted">Comience agregando el primer autor al sistema</p>
+                <?php if (isAdmin()): ?>
                 <a href="autor_form.php" class="btn btn-primary" style="position: relative; z-index: 1000;">
                     <i class="bi bi-plus-circle"></i> Agregar Primer Autor
                 </a>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <!-- Información para el usuario -->
@@ -201,31 +205,31 @@ include '../includes/header.php';
                                            title="Ver detalles">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        
-                                        <a href="autor_form.php?id=<?= $autor['id'] ?>" 
-                                           class="btn btn-outline-primary"
-                                           style="position: relative; z-index: 1000;"
-                                           data-bs-toggle="tooltip" 
-                                           title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        
-                                        <?php if ($autor['total_libros'] == 0): ?>
-                                            <a href="autor_delete.php?id=<?= $autor['id'] ?>" 
-                                               class="btn btn-outline-danger"
+                                        <?php if (isAdmin()): ?>
+                                            <a href="autor_form.php?id=<?= $autor['id'] ?>" 
+                                               class="btn btn-outline-primary"
                                                style="position: relative; z-index: 1000;"
                                                data-bs-toggle="tooltip" 
-                                               title="Eliminar autor">
-                                                <i class="bi bi-trash"></i>
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
                                             </a>
-                                        <?php else: ?>
-                                            <button class="btn btn-outline-secondary" 
-                                                    disabled
-                                                    style="position: relative; z-index: 1000;"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="No se puede eliminar: tiene <?= $autor['total_libros'] ?> libro(s) asociado(s). Primero elimine los libros.">
-                                                <i class="bi bi-lock"></i>
-                                            </button>
+                                            <?php if ($autor['total_libros'] == 0): ?>
+                                                <a href="autor_delete.php?id=<?= $autor['id'] ?>" 
+                                                   class="btn btn-outline-danger"
+                                                   style="position: relative; z-index: 1000;"
+                                                   data-bs-toggle="tooltip" 
+                                                   title="Eliminar autor">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            <?php else: ?>
+                                                <button class="btn btn-outline-secondary" 
+                                                        disabled
+                                                        style="position: relative; z-index: 1000;"
+                                                        data-bs-toggle="tooltip" 
+                                                        title="No se puede eliminar: tiene <?= $autor['total_libros'] ?> libro(s) asociado(s). Primero elimine los libros.">
+                                                    <i class="bi bi-lock"></i>
+                                                </button>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </td>

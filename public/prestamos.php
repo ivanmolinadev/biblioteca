@@ -4,8 +4,8 @@
  */
 require_once '../config/init.php';
 
-// Requerir autenticación de administrador
-requireAuth(true);
+// Requerir autenticación (sin restricción de rol)
+requireAuth();
 
 $page_title = 'Gestión de Préstamos';
 
@@ -185,11 +185,13 @@ include '../includes/header.php';
         </h1>
         <p class="text-muted mb-0">Gestiona los préstamos activos y el historial</p>
     </div>
+    <?php if (isAdmin()): ?>
     <div>
-        <a href="prestamo_form.php" class="btn btn-primary" style="position: relative; z-index: 9999;">
+        <a href="prestamo_form.php" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Nuevo Préstamo
         </a>
     </div>
+    <?php endif; ?>
 </div>
 
 <!-- Filtros de búsqueda -->
@@ -253,9 +255,11 @@ include '../includes/header.php';
                 <i class="bi bi-journal-arrow-up text-muted" style="font-size: 3rem;"></i>
                 <h5 class="mt-3 text-muted">No hay préstamos registrados</h5>
                 <p class="text-muted">Comience registrando el primer préstamo</p>
+                <?php if (isAdmin()): ?>
                 <button type="button" class="btn btn-primary" style="position: relative; z-index: 1000;" data-bs-toggle="modal" data-bs-target="#nuevoPrestamoModal">
                     <i class="bi bi-plus-circle"></i> Crear Primer Préstamo
                 </button>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -318,22 +322,22 @@ include '../includes/header.php';
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
                                         <!-- Botón de ver eliminado -->
-                                        
-                                        <?php if ($prestamo['estado'] === 'activo' || $prestamo['estado_real'] === 'atrasado'): ?>
-                                            <a href="devolucion_form.php?prestamo_id=<?= $prestamo['id'] ?>" 
-                                               class="btn btn-outline-success"
+                                        <?php if (isAdmin()): ?>
+                                            <?php if ($prestamo['estado'] === 'activo' || $prestamo['estado_real'] === 'atrasado'): ?>
+                                                <a href="devolucion_form.php?prestamo_id=<?= $prestamo['id'] ?>" 
+                                                   class="btn btn-outline-success"
+                                                   data-bs-toggle="tooltip" 
+                                                   title="Registrar devolución">
+                                                    <i class="bi bi-arrow-return-left"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                            <a href="prestamo_form.php?id=<?= $prestamo['id'] ?>" 
+                                               class="btn btn-outline-primary"
                                                data-bs-toggle="tooltip" 
-                                               title="Registrar devolución">
-                                                <i class="bi bi-arrow-return-left"></i>
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
                                             </a>
                                         <?php endif; ?>
-                                        
-                                        <a href="prestamo_form.php?id=<?= $prestamo['id'] ?>" 
-                                           class="btn btn-outline-primary"
-                                           data-bs-toggle="tooltip" 
-                                           title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
                                     </div>
                                 </td>
                             </tr>

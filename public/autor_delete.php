@@ -5,7 +5,7 @@
 require_once '../config/init.php';
 
 // Requerir autenticación de administrador
-requireAuth(true);
+requireAuth();
 
 $db = getDBConnection();
 $autor = null;
